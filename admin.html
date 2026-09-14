@@ -266,7 +266,7 @@
         </div>
         <div style="margin-top:12px;text-align:right;"><button class="btn" id="ctAdd2">添加</button></div>
       </div>
-      <div id="ctList"></div>
+      <div id="ctList2"></div>
     </section>
 
     <!-- 数据维护 -->
@@ -1015,8 +1015,8 @@
         '<button class="btn danger" data-act="del" data-i="' + i + '">删除</button>' +
         '</div></div>';
     });
-    $("ctList").innerHTML = html;
-    $("ctList").querySelectorAll("button[data-act]").forEach(function(b){
+    $("ctList2").innerHTML = html;
+    $("ctList2").querySelectorAll("button[data-act]").forEach(function(b){
       b.addEventListener("click", function(){
         var act = b.getAttribute("data-act");
         var item = S.data.contacts.slice().sort(bySort)[parseInt(b.getAttribute("data-i"), 10)];
