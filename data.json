@@ -9,13 +9,6 @@
   },
   "banners": [
     {
-      "id": "b1",
-      "src": "uploads/banner/banner_1.jpg",
-      "title": "",
-      "sort": 1,
-      "show": true
-    },
-    {
       "id": "b2",
       "src": "uploads/banner/banner_2.jpg",
       "title": "",
