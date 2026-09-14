@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>后台管理</title>
+<style>
+  :root{
+    --bg:#F4F1EC; --card:#FFFFFF; --ink:#2E2A26; --sub:#8A7F73; --line:#E8E2D8;
+    --accent:#B08D4F; --accent-soft:rgba(176,141,79,.14);
+    --danger:#C25E4C; --ok:#5F7A55;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    --serif:Georgia,"Songti SC","SimSun",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;}
+  button{font-family:var(--sans);cursor:pointer;}
+  input,select,textarea{font-family:var(--sans);font-size:14px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);outline:none;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  img{display:block;max-width:100%;}
+
+  /* ===== 登录页 ===== */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{width:100%;max-width:400px;background:var(--card);border-radius:20px;padding:28px 24px;box-shadow:0 8px 30px rgba(46,42,38,.08);}
+  .login-card h1{font-family:var(--serif);font-size:22px;text-align:center;margin-bottom:4px;}
+  .login-card .tip{font-size:12px;color:var(--sub);text-align:center;margin-bottom:20px;}
+  .login-card label{display:block;font-size:12px;color:var(--sub);margin:12px 0 6px;}
+  .login-card .row{display:flex;gap:8px;align-items:center;}
+  .login-card .row input{flex:1;}
+  .login-card .remember{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub);margin-top:10px;}
+  .login-card .remember input{width:auto;}
+  details.adv{margin-top:14px;font-size:12px;color:var(--sub);}
+  details.adv input{margin-top:6px;font-size:13px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border:0;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;
+    background:var(--ink);color:#fff;transition:opacity .2s;
+  }
+  .btn:hover{opacity:.88;}
+  .btn.block{width:100%;margin-top:18px;}
+  .btn.ghost{background:var(--accent-soft);color:var(--accent);}
+  .btn.danger{background:rgba(194,94,76,.12);color:var(--danger);}
+  .btn.small{padding:6px 12px;font-size:12px;border-radius:8px;}
+  .login-err{color:var(--danger);font-size:12px;margin-top:10px;min-height:18px;}
+
+  /* ===== 主界面 ===== */
+  .app{display:flex;min-height:100vh;}
+  .side{width:170px;flex:0 0 auto;background:#2E2A26;color:#EDE8E0;padding:16px 10px;display:flex;flex-direction:column;}
+  .side .logo{font-family:var(--serif);font-size:17px;padding:4px 10px 16px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:10px;}
+  .side nav{flex:1;}
+  .side nav button{
+    display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    background:none;border:0;color:rgba(237,232,224,.75);font-size:13.5px;
+    padding:10px 10px;border-radius:9px;margin-bottom:2px;
+  }
+  .side nav button.active{background:rgba(255,255,255,.12);color:#fff;}
+  .side nav button svg{width:16px;height:16px;flex:0 0 auto;}
+  .side .repo-info{font-size:10.5px;color:rgba(237,232,224,.5);padding:10px;border-top:1px solid rgba(255,255,255,.12);word-break:break-all;}
+  .side .logout{margin-top:8px;}
+
+  .main{flex:1;min-width:0;padding:20px 22px 60px;}
+  .page-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+  .page-title h2{font-size:19px;}
+  .page-title .sub{font-size:12px;color:var(--sub);font-weight:400;}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 1px 4px rgba(46,42,38,.05);}
+  .card h3{font-size:15px;margin-bottom:14px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-grid .full{grid-column:1 / -1;}
+  .field label{display:block;font-size:12px;color:var(--sub);margin-bottom:5px;}
+  .field textarea{min-height:72px;resize:vertical;}
+
+  .list-item{
+    display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:10px 12px;margin-bottom:10px;
+  }
+  .list-item .thumb{width:58px;height:44px;border-radius:8px;object-fit:cover;background:#EFEAE2;flex:0 0 auto;}
+  .list-item .info{flex:1;min-width:0;}
+  .list-item .info .t{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .list-item .info .s{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .list-item .ops{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+  .list-item .ops .btn{padding:5px 9px;font-size:11px;border-radius:7px;}
+  .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);margin-left:6px;}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .chip{
+    border:1px solid var(--line);background:#fff;color:var(--sub);
+    padding:7px 14px;border-radius:99px;font-size:13px;
+  }
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+
+  .upload-zone{
+    border:2px dashed var(--line);border-radius:14px;padding:26px;
+    text-align:center;color:var(--sub);font-size:13px;cursor:pointer;background:#FBF9F5;
+  }
+  .upload-zone.drag{border-color:var(--accent);background:var(--accent-soft);}
+
+  .img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .img-cell{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .img-cell .ph{aspect-ratio:4/3;background:#EFEAE2;overflow:hidden;}
+  .img-cell .ph img{width:100%;height:100%;object-fit:cover;}
+  .img-cell .pt{padding:7px 9px;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .img-cell .po{display:flex;gap:4px;padding:0 7px 8px;flex-wrap:wrap;}
+  .img-cell .po .btn{padding:4px 7px;font-size:10px;border-radius:6px;}
+
+  .hint{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.7;}
+  .hint b{color:var(--ink);}
+
+  /* ===== 模态框 ===== */
+  .modal-mask{position:fixed;inset:0;background:rgba(20,16,12,.45);z-index:40;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-mask.open{display:flex;}
+  .modal{background:#fff;border-radius:18px;width:100%;max-width:420px;max-height:86vh;overflow:auto;padding:20px;}
+  .modal h3{font-size:16px;margin-bottom:14px;}
+  .modal .field{margin-bottom:12px;}
+  .modal .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+
+  /* ===== 提示与忙碌 ===== */
+  #toast{
+    position:fixed;left:50%;bottom:30px;transform:translateX(-50%);
+    background:rgba(30,26,22,.92);color:#fff;font-size:13px;
+    padding:10px 20px;border-radius:999px;z-index:70;opacity:0;transition:opacity .3s;pointer-events:none;
+  }
+  #toast.show{opacity:1;}
+  #busy{
+    position:fixed;inset:0;background:rgba(244,241,236,.55);z-index:60;
+    display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;
+  }
+  #busy.show{display:flex;}
+  .spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #busy .msg{font-size:13px;color:var(--sub);}
+
+  @media (max-width:720px){
+    .app{flex-direction:column;}
+    .side{width:100%;flex-direction:row;align-items:center;padding:8px 10px;overflow-x:auto;}
+    .side .logo{padding:0 12px 0 6px;border-bottom:0;border-right:1px solid rgba(255,255,255,.12);margin-bottom:0;white-space:nowrap;}
+    .side nav{display:flex;gap:4px;flex:1;}
+    .side nav button{width:auto;white-space:nowrap;padding:8px 12px;}
+    .side .repo-info{display:none;}
+    .side .logout{flex:0 0 auto;}
+    .main{padding:16px 14px 40px;}
+    .form-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 登录 ===== -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h1>后台管理</h1>
+    <div class="tip">密码 + GitHub Token 双重校验</div>
+    <label>管理密码</label>
+    <input type="password" id="pw" placeholder="请输入管理密码" autocomplete="current-password">
+    <label>GitHub Token（写仓库用）</label>
+    <input type="password" id="token" placeholder="ghp_ 或 github_pat_ 开头" autocomplete="off">
+    <div class="remember"><input type="checkbox" id="remember"><span>仅本次会话记住 Token（关闭页面后失效）</span></div>
+    <details class="adv">
+      <summary>仓库信息（一般自动识别，无需修改）</summary>
+      <label>Owner</label><input type="text" id="owner" placeholder="GitHub 用户名">
+      <label>仓库名</label><input type="text" id="repo" placeholder="仓库名">
+      <label>分支</label><input type="text" id="branch" value="main">
+    </details>
+    <button class="btn block" id="loginBtn">进入管理后台</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ===== 主界面 ===== -->
+<div class="app" id="app" hidden>
+  <aside class="side">
+    <div class="logo">后台管理</div>
+    <nav id="sideNav">
+      <button data-tab="site" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg>站点设置</button>
+      <button data-tab="banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 15l-4-4-8 8"/></svg>轮播 Banner</button>
+      <button data-tab="category"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h8l2 3h8v11H3z"/></svg>分类管理</button>
+      <button data-tab="image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-11 11"/></svg>图片管理</button>
+      <button data-tab="contact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v4.5l3 2"/></svg>联系方式</button>
+      <button data-tab="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>数据维护</button>
+    </nav>
+    <div class="repo-info" id="repoInfo"></div>
+    <button class="btn ghost logout" id="logoutBtn">退出登录</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- 站点设置 -->
+    <section class="panel active" data-panel="site">
+      <div class="page-title"><h2>站点设置</h2><span class="sub">标题、关键词等全局信息</span></div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field full"><label>网站标题（前台顶部与浏览器标题显示）</label><input type="text" id="s_title"></div>
+          <div class="field"><label>关键词（SEO）</label><input type="text" id="s_kw"></div>
+          <div class="field"><label>描述（SEO）</label><input type="text" id="s_desc"></div>
+          <div class="field full"><label>页脚文案</label><input type="text" id="s_footer"></div>
+        </div>
+        <div style="margin-top:14px;text-align:right;"><button class="btn" id="saveSite">保存站点设置</button></div>
+      </div>
+    </section>
+
+    <!-- Banner -->
+    <section class="panel" data-panel="banner">
+      <div class="page-title"><h2>轮播 Banner</h2><span class="sub">0~N 张均可，没有则前台自动隐藏轮播</span></div>
+      <div class="card">
+        <h3>新增 Banner</h3>
+        <div class="form-grid">
+          <div class="field"><label>标题（可选，显示在图上）</label><input type="text" id="bn_title"></div>
+          <div class="field"><label>图片（建议横版，会自动压缩）</label><input type="file" id="bn_file" accept="image/*"></div>
+        </div>
+        <div style="margin-top:12px;text-align:right;"><button class="btn" id="bnAdd">上传并添加</button></div>
+      </div>
+      <div id="bnList"></div>
+    </section>
+
+    <!-- 分类 -->
+    <section class="panel" data-panel="category">
+      <div class="page-title"><h2>分类管理</h2><span class="sub">一级 / 子分类均可，前台自动适配数量</span></div>
+      <div class="card">
+        <h3>新增分类</h3>
+        <div class="form-grid">
+          <div class="field"><label>分类名称</label><input type="text" id="ct_name"></div>
+          <div class="field"><label>上级分类</label><select id="ct_pid"><option value="0">顶级分类</option></select></div>
+          <div class="field full"><label>封面图片（建议 4:3）</label><input type="file" id="ct_file" accept="image/*"></div>
+        </div>
+        <div style="margin-top:12px;text-align:right;"><button class="btn" id="ctAdd">添加分类</button></div>
+      </div>
+      <div id="ctList"></div>
+    </section>
+
+    <!-- 图片 -->
+    <section class="panel" data-panel="image">
+      <div class="page-title"><h2>图片管理</h2><span class="sub">按分类筛选 · 批量上传 · 替换 / 删除 / 排序</span></div>
+      <div class="card">
+        <h3>上传图片</h3>
+        <div class="form-grid">
+          <div class="field"><label>归属分类</label><select id="im_cat"></select></div>
+          <div class="field"><label>图片文件（可多选）</label><input type="file" id="im_files" accept="image/*" multiple></div>
+        </div>
+        <div class="upload-zone" id="dropZone">也可以把图片拖到这里上传</div>
+        <div style="margin-top:12px;text-align:right;"><button class="btn" id="imUpload">上传图片</button></div>
+      </div>
+      <div class="chips" id="imChips"></div>
+      <div id="imGrid"></div>
+    </section>
+
+    <!-- 联系方式 -->
+    <section class="panel" data-panel="contact">
+      <div class="page-title"><h2>联系方式</h2><span class="sub">电话 / 微信 / 地址等，可自由增删</span></div>
+      <div class="card">
+        <h3>新增联系方式</h3>
+        <div class="form-grid">
+          <div class="field"><label>类型</label><select id="ct_type">
+            <option value="mob">电话</option><option value="wx">微信</option><option value="qq">QQ</option>
+            <option value="mail">邮箱</option><option value="web">网址</option><option value="adr">地址</option><option value="oth">其他</option>
+          </select></div>
+          <div class="field"><label>名称</label><input type="text" id="ct_label" placeholder="如：联系电话"></div>
+          <div class="field full"><label>内容</label><input type="text" id="ct_text" placeholder="号码 / 微信号 / 地址等"></div>
+        </div>
+        <div style="margin-top:12px;text-align:right;"><button class="btn" id="ctAdd2">添加</button></div>
+      </div>
+      <div id="ctList"></div>
+    </section>
+
+    <!-- 数据维护 -->
+    <section class="panel" data-panel="data">
+      <div class="page-title"><h2>数据维护</h2></div>
+      <div class="card">
+        <h3>备份与恢复</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn ghost" id="exportBtn">导出 data.json 备份</button>
+          <label class="btn ghost" style="cursor:pointer;">导入 data.json 恢复<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+          <button class="btn ghost" id="reloadBtn">从 GitHub 重新加载</button>
+        </div>
+        <div class="hint">备份：把当前 data.json 下载到本地。恢复：选择之前导出的备份文件，校验后直接写回仓库。重新加载：放弃本地改动，拉取仓库最新数据。</div>
+      </div>
+      <div class="card">
+        <h3>修改管理密码</h3>
+        <div class="field" style="max-width:320px;"><label>新密码（至少 6 位）</label><input type="password" id="newPw"></div>
+        <div style="margin-top:10px;"><button class="btn" id="changePw">保存新密码</button></div>
+        <div class="hint">修改后旧密码立即失效。密码只在本机浏览器内校验，真正的写保护是 GitHub Token。</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+<div id="busy"><div class="spinner"></div><div class="msg" id="busyMsg">处理中…</div></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ 工具 ============ */
+  var $ = function(id){ return document.getElementById(id); };
+  var S = { token:"", owner:"", repo:"", branch:"main", data:null, dataSha:null, tab:"site", imFilter:"all" };
+  var toastEl = $("toast"), busyEl = $("busy"), busyMsgEl = $("busyMsg");
+  var opLock = false;
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+  }
+  function busy(msg){
+    busyMsgEl.textContent = msg || "处理中…";
+    busyEl.classList.add("show");
+  }
+  function unbusy(){ busyEl.classList.remove("show"); }
+  function bySort(a,b){ return (a.sort||0)-(b.sort||0); }
+  function uid(p){ return (p||"x") + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function extOf(file){
+    var m = /\.([a-z0-9]+)$/i.exec(file.name || "");
+    return m ? m[1].toLowerCase() : "jpg";
+  }
+
+  function sha256(str){
+    var buf = new TextEncoder().encode(str);
+    return crypto.subtle.digest("SHA-256", buf).then(function(h){
+      return Array.from(new Uint8Array(h)).map(function(b){ return b.toString(16).padStart(2,"0"); }).join("");
+    });
+  }
+
+  /* ============ GitHub API ============ */
+  function gh(path, method, body){
+    var url = "https://api.github.com/repos/" + encodeURIComponent(S.owner) + "/" + encodeURIComponent(S.repo) +
+              "/contents/" + path + "?ref=" + encodeURIComponent(S.branch);
+    return fetch(url, {
+      method: method || "GET",
+      headers: {
+        "Authorization": "Bearer " + S.token,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.json().then(function(j){ return { ok: r.ok, status: r.status, json: j }; });
+    });
+  }
+  function ghErr(res, what){
+    var msg = res.json && res.json.message ? res.json.message : ("HTTP " + res.status);
+    if (res.status === 401) msg = "Token 无效或已过期";
+    if (res.status === 403) msg = "Token 权限不足（需要 Contents 读写）或触发限流";
+    if (res.status === 404) msg = "仓库或文件不存在，请检查仓库信息";
+    throw new Error((what || "操作") + "失败：" + msg);
+  }
+
+  function getFileSha(path){
+    return gh(path).then(function(r){
+      if (!r.ok) return null;
+      return r.json.sha || null;
+    });
+  }
+  // 写入文件；dataJson 为 true 时按 JSON 处理
+  function putFile(path, content, sha, msg){
+    return gh(path, "PUT", { message: msg, content: content, sha: sha || undefined })
+      .then(function(r){ if (!r.ok) ghErr(r, "写入"); return r.json; });
+  }
+  function deleteFile(path, sha, msg){
+    return gh(path, "DELETE", { message: msg, sha: sha })
+      .then(function(r){ if (!r.ok) ghErr(r, "删除"); return r.json; });
+  }
+
+  function saveData(msg){
+    var content = btoa(unescape(encodeURIComponent(JSON.stringify(S.data, null, 2))));
+    return getFileSha("data.json").then(function(sha){
+      return putFile("data.json", content, sha, msg || "更新站点数据").then(function(j){
+        S.dataSha = j.content ? j.sha : sha;
+      });
+    });
+  }
+
+  function uploadImage(file, folder, onProgress){
+    return compress(file, 1600, 0.82).then(function(blob){
+      return new Promise(function(resolve, reject){
+        var rd = new FileReader();
+        rd.onload = function(){
+          var base64 = String(rd.result).split(",")[1];
+          var name = uid("") + "." + (blob.type === "image/png" ? "png" : extOf(file));
+          var path = "uploads/" + folder + "/" + name;
+          busy("上传图片…");
+          putFile(path, base64, null, "上传图片 " + name)
+            .then(function(){ resolve({ path: path, name: name }); })
+            .catch(reject);
+        };
+        rd.onerror = function(){ reject(new Error("读取文件失败")); };
+        rd.readAsDataURL(blob);
+      });
+    });
+  }
+
+  function compress(file, maxSide, quality){
+    return new Promise(function(resolve, reject){
+      if (file.size < 300 * 1024){
+        // 小图不压缩，直接返回原文件
+        return resolve(file);
+      }
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){
+        try{
+          var w = img.width, h = img.height;
+          var sc = Math.min(1, maxSide / Math.max(w, h));
+          w = Math.max(1, Math.round(w * sc));
+          h = Math.max(1, Math.round(h * sc));
+          var c = document.createElement("canvas");
+          c.width = w; c.height = h;
+          var ctx = c.getContext("2d");
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          var isPng = file.type === "image/png";
+          c.toBlob(function(b){
+            URL.revokeObjectURL(url);
+            if (!b) return reject(new Error("压缩失败"));
+            resolve(b);
+          }, isPng ? "image/png" : "image/jpeg", quality);
+        }catch(e){ URL.revokeObjectURL(url); reject(e); }
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("图片无法解析")); };
+      img.src = url;
+    });
+  }
+
+  // 串行执行写操作，避免并发冲突
+  function withOp(fn){
+    if (opLock){ toast("上一个操作还没完成"); return; }
+    opLock = true;
+    busy();
+    fn().catch(function(e){
+      toast(e.message || "操作失败");
+    }).finally(function(){
+      opLock = false;
+      unbusy();
+    });
+  }
+
+  /* ============ 登录 ============ */
+  function detectRepo(){
+    var h = location.hostname;
+    if (/\.github\.io$/.test(h)){
+      var seg = location.pathname.split("/").filter(Boolean);
+      return { owner: h.replace(/\.github\.io$/, ""), repo: seg[0] || "", branch: "main" };
+    }
+    return { owner: "", repo: "", branch: "main" };
+  }
+
+  function prefillLogin(){
+    var d = detectRepo();
+    var saved = null;
+    try{ saved = JSON.parse(localStorage.getItem("admin_repo") || "null"); }catch(e){}
+    $("owner").value = (saved && saved.owner) || d.owner;
+    $("repo").value = (saved && saved.repo) || d.repo;
+    $("branch").value = (saved && saved.branch) || d.branch || "main";
+  }
+
+  $("loginBtn").addEventListener("click", doLogin);
+  $("pw").addEventListener("keydown", function(e){ if (e.key === "Enter") doLogin(); });
+  $("token").addEventListener("keydown", function(e){ if (e.key === "Enter") doLogin(); });
+
+  function doLogin(){
+    var pw = $("pw").value;
+    var token = $("token").value.trim();
+    if (!pw){ $("loginErr").textContent = "请输入管理密码"; return; }
+    if (!token){ $("loginErr").textContent = "请输入 GitHub Token"; return; }
+    S.token = token;
+    S.owner = $("owner").value.trim();
+    S.repo = $("repo").value.trim();
+    S.branch = $("branch").value.trim() || "main";
+    if (!S.owner || !S.repo){ $("loginErr").textContent = "请填写仓库 Owner 和仓库名（一般自动识别）"; return; }
+    try{ localStorage.setItem("admin_repo", JSON.stringify({ owner: S.owner, repo: S.repo, branch: S.branch })); }catch(e){}
+
+    $("loginErr").textContent = "";
+    busy("校验密码…");
+    fetch("data.json?v=" + Date.now())
+      .then(function(r){ if (!r.ok) throw new Error("读取 data.json 失败：HTTP " + r.status); return r.json(); })
+      .then(function(data){
+        return sha256(pw).then(function(h){
+          if (data.admin && data.admin.passwordHash && h !== data.admin.passwordHash){
+            throw new Error("密码错误");
+          }
+          // 用 Token 拉取仓库内 data.json，同时校验 Token 有效性与权限
+          return gh("data.json").then(function(r){
+            if (!r.ok) ghErr(r, "Token 验证");
+            S.data = data;
+            S.dataSha = r.json.sha;
+            if ($("remember").checked){
+              try{ sessionStorage.setItem("admin_token", token); }catch(e){}
+            } else {
+              try{ sessionStorage.removeItem("admin_token"); }catch(e){}
+            }
+            enterPanel();
+          });
+        });
+      })
+      .catch(function(e){
+        unbusy();
+        $("loginErr").textContent = e.message || "登录失败";
+      });
+  }
+
+  function enterPanel(){
+    unbusy();
+    $("loginWrap").hidden = true;
+    $("app").hidden = false;
+    $("repoInfo").textContent = S.owner + "/" + S.repo + " @" + S.branch;
+    renderSiteForm();
+    renderBanners();
+    renderCats();
+    renderCatSelects();
+    renderImages();
+    renderContacts();
+  }
+
+  $("logoutBtn").addEventListener("click", function(){
+    S.token = ""; S.data = null;
+    try{ sessionStorage.removeItem("admin_token"); }catch(e){}
+    location.reload();
+  });
+
+  // 记住 token 自动填充
+  (function(){
+    try{
+      var t = sessionStorage.getItem("admin_token");
+      if (t) $("token").value = t;
+    }catch(e){}
+    prefillLogin();
+  })();
+
+  /* ============ 视图切换 ============ */
+  document.querySelectorAll("#sideNav button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var tab = b.getAttribute("data-tab");
+      S.tab = tab;
+      document.querySelectorAll("#sideNav button").forEach(function(x){ x.classList.toggle("active", x === b); });
+      document.querySelectorAll(".panel").forEach(function(p){ p.classList.toggle("active", p.getAttribute("data-panel") === tab); });
+      if (tab === "banner") renderBanners();
+      if (tab === "category"){ renderCats(); renderCatSelects(); }
+      if (tab === "image"){ renderCatSelects(); renderImages(); }
+      if (tab === "contact") renderContacts();
+    });
+  });
+
+  /* ============ 站点设置 ============ */
+  function renderSiteForm(){
+    $("s_title").value = S.data.site.title || "";
+    $("s_kw").value = S.data.site.keywords || "";
+    $("s_desc").value = S.data.site.description || "";
+    $("s_footer").value = S.data.site.footer || "";
+  }
+  $("saveSite").addEventListener("click", function(){
+    S.data.site.title = $("s_title").value.trim();
+    S.data.site.keywords = $("s_kw").value.trim();
+    S.data.site.description = $("s_desc").value.trim();
+    S.data.site.footer = $("s_footer").value.trim();
+    withOp(function(){ return saveData("更新站点设置").then(function(){ toast("站点设置已保存"); }); });
+  });
+
+  /* ============ Banner ============ */
+  $("bnAdd").addEventListener("click", function(){
+    var title = $("bn_title").value.trim();
+    var file = $("bn_file").files[0];
+    if (!file){ toast("请选择图片"); return; }
+    withOp(function(){
+      return uploadImage(file, "banner").then(function(r){
+        var maxSort = S.data.banners.reduce(function(m, b){ return Math.max(m, b.sort || 0); }, 0);
+        S.data.banners.push({ id: uid("b"), src: r.path, title: title, sort: maxSort + 1, show: true });
+        return saveData("新增 Banner").then(function(){
+          $("bn_title").value = ""; $("bn_file").value = "";
+          renderBanners();
+          toast("Banner 已添加，稍等几分钟前台自动更新");
+        });
+      });
+    });
+  });
+
+  function renderBanners(){
+    var list = S.data.banners.slice().sort(bySort);
+    var html = "";
+    if (!list.length) html = '<div class="hint">还没有 Banner，前台将自动隐藏轮播。</div>';
+    list.forEach(function(b, i){
+      html += '<div class="list-item">' +
+        '<img class="thumb" src="' + esc(b.src) + '" alt="">' +
+        '<div class="info"><div class="t">' + esc(b.title || "（无标题）") + (b.show ? "" : ' <span class="badge">已隐藏</span>') + '</div>' +
+        '<div class="s">' + esc(b.src) + '</div></div>' +
+        '<div class="ops">' +
+        '<button class="btn ghost" data-act="title" data-i="' + i + '">标题</button>' +
+        '<button class="btn ghost" data-act="rep" data-i="' + i + '">替换</button>' +
+        '<button class="btn ghost" data-act="show" data-i="' + i + '">' + (b.show ? "隐藏" : "显示") + '</button>' +
+        '<button class="btn ghost" data-act="up" data-i="' + i + '">上移</button>' +
+        '<button class="btn ghost" data-act="down" data-i="' + i + '">下移</button>' +
+        '<button class="btn danger" data-act="del" data-i="' + i + '">删除</button>' +
+        '</div></div>';
+    });
+    $("bnList").innerHTML = html;
+    $("bnList").querySelectorAll("button[data-act]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var act = b.getAttribute("data-act");
+        var i = parseInt(b.getAttribute("data-i"), 10);
+        var item = S.data.banners.slice().sort(bySort)[i];
+        if (!item) return;
+        if (act === "title"){
+          var t = prompt("Banner 标题（可留空）", item.title || "");
+          if (t === null) return;
+          item.title = t;
+          withOp(function(){ return saveData("修改 Banner 标题").then(function(){ renderBanners(); toast("已保存"); }); });
+        } else if (act === "rep"){
+          var inp = document.createElement("input");
+          inp.type = "file"; inp.accept = "image/*";
+          inp.onchange = function(){
+            var f = inp.files[0]; if (!f) return;
+            withOp(function(){
+              return uploadImage(f, "banner").then(function(r){
+                var oldSrc = item.src;
+                item.src = r.path;
+                return saveData("替换 Banner").then(function(){
+                  if (oldSrc && oldSrc.indexOf("uploads/") === 0) deleteOldFile(oldSrc);
+                  renderBanners(); toast("Banner 已替换");
+                });
+              });
+            });
+          };
+          inp.click();
+        } else if (act === "show"){
+          item.show = !item.show;
+          withOp(function(){ return saveData("切换 Banner 显示").then(function(){ renderBanners(); toast("已保存"); }); });
+        } else if (act === "up" || act === "down"){
+          moveItem(S.data.banners, i, act === "up" ? -1 : 1);
+          withOp(function(){ return saveData("调整 Banner 顺序").then(function(){ renderBanners(); toast("已保存"); }); });
+        } else if (act === "del"){
+          if (!confirm("确定删除这个 Banner？")) return;
+          withOp(function(){
+            var oldSrc = item.src;
+            S.data.banners = S.data.banners.filter(function(x){ return x.id !== item.id; });
+            return saveData("删除 Banner").then(function(){
+              if (oldSrc && oldSrc.indexOf("uploads/") === 0) deleteOldFile(oldSrc);
+              renderBanners(); toast("已删除");
+            });
+          });
+        }
+      });
+    });
+  }
+
+  function deleteOldFile(src){
+    getFileSha(src).then(function(sha){
+      if (sha) deleteFile(src, sha, "清理旧图片").catch(function(){});
+    }).catch(function(){});
+  }
+
+  function moveItem(arr, index, delta){
+    var sorted = arr.slice().sort(bySort);
+    var target = index + delta;
+    if (target < 0 || target >= sorted.length) return;
+    var a = sorted[index], b = sorted[target];
+    var tmp = a.sort; a.sort = b.sort; b.sort = tmp;
+  }
+
+  /* ============ 分类 ============ */
+  function renderCatSelects(){
+    // 上级分类下拉
+    var pidSel = $("ct_pid");
+    var keep = pidSel.value;
+    pidSel.innerHTML = '<option value="0">顶级分类</option>';
+    S.data.categories.filter(function(c){ return c.pid === 0; }).sort(bySort).forEach(function(c){
+      var o = document.createElement("option");
+      o.value = c.id; o.textContent = c.name;
+      pidSel.appendChild(o);
+    });
+    pidSel.value = keep || "0";
+
+    // 图片归属分类下拉
+    var imSel = $("im_cat");
+    var keep2 = imSel.value;
+    imSel.innerHTML = "";
+    S.data.categories.slice().sort(bySort).forEach(function(c){
+      var o = document.createElement("option");
+      o.value = c.id; o.textContent = (c.pid === 0 ? "" : "└ ") + c.name;
+      imSel.appendChild(o);
+    });
+    imSel.value = keep2 || (S.data.categories[0] ? S.data.categories[0].id : "");
+  }
+
+  function catById(id){ return S.data.categories.find(function(c){ return c.id === id; }); }
+  function childrenOf(id){ return S.data.categories.filter(function(c){ return c.pid === id; }).sort(bySort); }
+  function catIdsWithChildren(id){
+    var out = [id];
+    var q = childrenOf(id);
+    while (q.length){
+      var c = q.shift(); out.push(c.id); q = q.concat(childrenOf(c.id));
+    }
+    return out;
+  }
+  function imagesOfCat(id){
+    var ids = catIdsWithChildren(id);
+    return S.data.images.filter(function(im){ return ids.indexOf(im.categoryId) !== -1; });
+  }
+
+  $("ctAdd").addEventListener("click", function(){
+    var name = $("ct_name").value.trim();
+    var pid = $("ct_pid").value;
+    var file = $("ct_file").files[0];
+    if (!name){ toast("请输入分类名称"); return; }
+    withOp(function(){
+      var done = function(imageSrc){
+        var maxSort = S.data.categories.reduce(function(m, c){ return Math.max(m, c.sort || 0); }, 0);
+        S.data.categories.push({ id: uid("c"), pid: pid === "0" ? 0 : pid, name: name, image: imageSrc, sort: maxSort + 1, show: true, hot: false });
+        return saveData("新增分类").then(function(){
+          $("ct_name").value = ""; $("ct_file").value = "";
+          renderCatSelects(); renderCats();
+          toast("分类已添加");
+        });
+      };
+      if (file) return uploadImage(file, "menu").then(function(r){ return done(r.path); });
+      return done("");
+    });
+  });
+
+  function renderCats(){
+    var roots = S.data.categories.filter(function(c){ return c.pid === 0; }).sort(bySort);
+    var html = "";
+    if (!roots.length) html = '<div class="hint">还没有分类。</div>';
+    roots.forEach(function(c){
+      var subs = childrenOf(c.id);
+      var list = [c].concat(subs);
+      list.forEach(function(item){
+        var isSub = item.id !== c.id;
+        html += '<div class="list-item" style="' + (isSub ? "margin-left:26px;" : "") + '">' +
+          (item.image ? '<img class="thumb" src="' + esc(item.image) + '" alt="">' : '<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:#C9BFB0;">无图</div>') +
+          '<div class="info"><div class="t">' + (isSub ? "└ " : "") + esc(item.name) +
+          (item.show ? "" : ' <span class="badge">隐藏</span>') + (item.hot ? ' <span class="badge">推荐</span>' : '') + '</div>' +
+          '<div class="s">' + (isSub ? "子分类" : "一级分类") + ' · 图片 ' + imagesOfCat(item.id).length + ' 张</div></div>' +
+          '<div class="ops">' +
+          '<button class="btn ghost" data-act="edit" data-id="' + item.id + '">改名</button>' +
+          '<button class="btn ghost" data-act="cover" data-id="' + item.id + '">换封面</button>' +
+          '<button class="btn ghost" data-act="hot" data-id="' + item.id + '">' + (item.hot ? "取消推荐" : "设推荐") + '</button>' +
+          '<button class="btn ghost" data-act="show" data-id="' + item.id + '">' + (item.show ? "隐藏" : "显示") + '</button>' +
+          '<button class="btn ghost" data-act="up" data-id="' + item.id + '">上移</button>' +
+          '<button class="btn ghost" data-act="down" data-id="' + item.id + '">下移</button>' +
+          '<button class="btn danger" data-act="del" data-id="' + item.id + '">删除</button>' +
+          '</div></div>';
+      });
+    });
+    $("ctList").innerHTML = html;
+    $("ctList").querySelectorAll("button[data-act]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var act = b.getAttribute("data-act");
+        var item = catById(b.getAttribute("data-id"));
+        if (!item) return;
+        if (act === "edit"){
+          var n = prompt("分类名称", item.name);
+          if (!n || n === null) return;
+          item.name = n.trim();
+          withOp(function(){ return saveData("修改分类名称").then(function(){ renderCats(); renderCatSelects(); toast("已保存"); }); });
+        } else if (act === "cover"){
+          var inp = document.createElement("input");
+          inp.type = "file"; inp.accept = "image/*";
+          inp.onchange = function(){
+            var f = inp.files[0]; if (!f) return;
+            withOp(function(){
+              return uploadImage(f, "menu").then(function(r){
+                var old = item.image;
+                item.image = r.path;
+                return saveData("替换分类封面").then(function(){
+                  if (old && old.indexOf("uploads/") === 0) deleteOldFile(old);
+                  renderCats(); renderCatSelects(); toast("封面已替换");
+                });
+              });
+            });
+          };
+          inp.click();
+        } else if (act === "hot"){
+          item.hot = !item.hot;
+          withOp(function(){ return saveData("切换精品推荐").then(function(){ renderCats(); toast("已保存"); }); });
+        } else if (act === "show"){
+          item.show = !item.show;
+          withOp(function(){ return saveData("切换分类显示").then(function(){ renderCats(); renderCatSelects(); toast("已保存"); }); });
+        } else if (act === "up" || act === "down"){
+          var group = childrenOf(item.pid);
+          if (item.pid === 0){
+            group = S.data.categories.filter(function(c){ return c.pid === 0; }).sort(bySort);
+          }
+          var idx = group.indexOf(item);
+          moveItem(group, idx, act === "up" ? -1 : 1);
+          withOp(function(){ return saveData("调整分类顺序").then(function(){ renderCats(); toast("已保存"); }); });
+        } else if (act === "del"){
+          if (childrenOf(item.id).length){
+            toast("该分类下有子分类，请先删除子分类");
+            return;
+          }
+          var imgs = imagesOfCat(item.id);
+          if (!confirm("确定删除分类「" + item.name + "」？将同时删除其下 " + imgs.length + " 张图片。")) return;
+          withOp(function(){
+            var old = item.image;
+            S.data.categories = S.data.categories.filter(function(x){ return x.id !== item.id; });
+            S.data.images = S.data.images.filter(function(x){ return x.categoryId !== item.id; });
+            return saveData("删除分类").then(function(){
+              if (old && old.indexOf("uploads/") === 0) deleteOldFile(old);
+              imgs.forEach(function(im){ if (im.src.indexOf("uploads/") === 0) deleteOldFile(im.src); });
+              renderCatSelects(); renderCats(); renderImages();
+              toast("分类及其图片已删除");
+            });
+          });
+        }
+      });
+    });
+  }
+
+  /* ============ 图片 ============ */
+  function renderChips(){
+    var html = '<button class="chip' + (S.imFilter === "all" ? " on" : "") + '" data-f="all">全部 (' + S.data.images.length + ')</button>';
+    S.data.categories.slice().sort(bySort).forEach(function(c){
+      var n = imagesOfCat(c.id).length;
+      html += '<button class="chip' + (S.imFilter === c.id ? " on" : "") + '" data-f="' + esc(c.id) + '">' + esc(c.name) + ' (' + n + ')</button>';
+    });
+    $("imChips").innerHTML = html;
+    $("imChips").querySelectorAll(".chip").forEach(function(ch){
+      ch.addEventListener("click", function(){
+        S.imFilter = ch.getAttribute("data-f");
+        renderChips(); renderImages();
+      });
+    });
+  }
+
+  function renderImages(){
+    renderChips();
+    var list = S.data.images.filter(function(im){
+      if (S.imFilter === "all") return true;
+      return catIdsWithChildren(S.imFilter).indexOf(im.categoryId) !== -1;
+    }).sort(bySort);
+    var html = "";
+    if (!list.length) html = '<div class="hint">这个分类还没有图片，选择上面的分类后上传。</div>';
+    list.forEach(function(im){
+      var cat = catById(im.categoryId);
+      html += '<div class="img-cell">' +
+        '<div class="ph"><img loading="lazy" src="' + esc(im.src) + '" alt=""></div>' +
+        '<div class="pt">' + esc(im.title || "（无标题）") + (im.show ? "" : " · 已隐藏") + (cat ? " · " + esc(cat.name) : "") + '</div>' +
+        '<div class="po">' +
+        '<button class="btn ghost" data-act="edit" data-id="' + im.id + '">标题</button>' +
+        '<button class="btn ghost" data-act="rep" data-id="' + im.id + '">替换</button>' +
+        '<button class="btn ghost" data-act="mv" data-id="' + im.id + '">移分类</button>' +
+        '<button class="btn ghost" data-act="show" data-id="' + im.id + '">' + (im.show ? "隐藏" : "显示") + '</button>' +
+        '<button class="btn ghost" data-act="up" data-id="' + im.id + '">上移</button>' +
+        '<button class="btn ghost" data-act="down" data-id="' + im.id + '">下移</button>' +
+        '<button class="btn danger" data-act="del" data-id="' + im.id + '">删除</button>' +
+        '</div></div>';
+    });
+    $("imGrid").innerHTML = html;
+    $("imGrid").querySelectorAll("button[data-act]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var act = b.getAttribute("data-act");
+        var item = S.data.images.find(function(x){ return x.id === b.getAttribute("data-id"); });
+        if (!item) return;
+        if (act === "edit"){
+          var t = prompt("图片标题（可留空）", item.title || "");
+          if (t === null) return;
+          item.title = t;
+          withOp(function(){ return saveData("修改图片标题").then(function(){ renderImages(); toast("已保存"); }); });
+        } else if (act === "rep"){
+          var inp = document.createElement("input");
+          inp.type = "file"; inp.accept = "image/*";
+          inp.onchange = function(){
+            var f = inp.files[0]; if (!f) return;
+            withOp(function(){
+              return uploadImage(f, "image").then(function(r){
+                var old = item.src;
+                item.src = r.path;
+                return saveData("替换图片").then(function(){
+                  if (old && old.indexOf("uploads/") === 0) deleteOldFile(old);
+                  renderImages(); toast("图片已替换");
+                });
+              });
+            });
+          };
+          inp.click();
+        } else if (act === "mv"){
+          var sel = prompt("输入目标分类 ID（可在分类管理页看到）", item.categoryId);
+          if (!sel) return;
+          if (!catById(sel)){ toast("分类不存在"); return; }
+          item.categoryId = sel;
+          withOp(function(){ return saveData("移动图片分类").then(function(){ renderImages(); toast("已移动"); }); });
+        } else if (act === "show"){
+          item.show = !item.show;
+          withOp(function(){ return saveData("切换图片显示").then(function(){ renderImages(); toast("已保存"); }); });
+        } else if (act === "up" || act === "down"){
+          var group = S.data.images.filter(function(x){
+            return S.imFilter === "all" || catIdsWithChildren(S.imFilter).indexOf(x.categoryId) !== -1;
+          }).sort(bySort);
+          moveItem(group, group.indexOf(item), act === "up" ? -1 : 1);
+          withOp(function(){ return saveData("调整图片顺序").then(function(){ renderImages(); toast("已保存"); }); });
+        } else if (act === "del"){
+          if (!confirm("确定删除这张图片？")) return;
+          withOp(function(){
+            var old = item.src;
+            S.data.images = S.data.images.filter(function(x){ return x.id !== item.id; });
+            return saveData("删除图片").then(function(){
+              if (old && old.indexOf("uploads/") === 0) deleteOldFile(old);
+              renderImages(); toast("已删除");
+            });
+          });
+        }
+      });
+    });
+  }
+
+  function uploadSelectedFiles(files){
+    if (!files || !files.length){ toast("未选择文件"); return; }
+    var catId = $("im_cat").value;
+    if (!catId){ toast("请先选择归属分类"); return; }
+    withOp(function(){
+      var chain = Promise.resolve();
+      var maxSort = S.data.images.reduce(function(m, x){ return Math.max(m, x.sort || 0); }, 0);
+      var added = [];
+      for (var i = 0; i < files.length; i++){
+        (function(file, idx){
+          chain = chain.then(function(){
+            return uploadImage(file, "image").then(function(r){
+              added.push({ id: uid("i"), categoryId: catId, src: r.path, title: file.name.replace(/\.[a-z0-9]+$/i, ""), sort: maxSort + idx + 1, show: true });
+            });
+          });
+        })(files[i], i);
+      }
+      return chain.then(function(){
+        if (!added.length) return;
+        S.data.images = S.data.images.concat(added);
+        return saveData("批量上传 " + added.length + " 张图片").then(function(){
+          $("im_files").value = "";
+          renderImages(); renderCats();
+          toast("已上传 " + added.length + " 张");
+        });
+      });
+    });
+  }
+
+  $("imUpload").addEventListener("click", function(){ uploadSelectedFiles($("im_files").files); });
+  $("dropZone").addEventListener("click", function(){ $("im_files").click(); });
+  $("dropZone").addEventListener("dragover", function(e){ e.preventDefault(); e.target.classList.add("drag"); });
+  $("dropZone").addEventListener("dragleave", function(e){ e.target.classList.remove("drag"); });
+  $("dropZone").addEventListener("drop", function(e){
+    e.preventDefault();
+    e.target.classList.remove("drag");
+    uploadSelectedFiles(e.dataTransfer.files);
+  });
+
+  /* ============ 联系方式 ============ */
+  $("ctAdd2").addEventListener("click", function(){
+    var type = $("ct_type").value;
+    var label = $("ct_label").value.trim();
+    var text = $("ct_text").value.trim();
+    if (!text){ toast("请输入内容"); return; }
+    var maxSort = S.data.contacts.reduce(function(m, c){ return Math.max(m, c.sort || 0); }, 0);
+    S.data.contacts.push({ id: uid("k"), type: type, label: label || type, text: text, sort: maxSort + 1 });
+    $("ct_label").value = ""; $("ct_text").value = "";
+    withOp(function(){ return saveData("新增联系方式").then(function(){ renderContacts(); toast("已添加"); }); });
+  });
+
+  function renderContacts(){
+    var list = S.data.contacts.slice().sort(bySort);
+    var html = "";
+    if (!list.length) html = '<div class="hint">还没有联系方式，前台将显示空态。</div>';
+    list.forEach(function(c, i){
+      html += '<div class="list-item">' +
+        '<div class="info"><div class="t">' + esc(c.label) + ' <span class="badge">' + esc(c.type) + '</span></div>' +
+        '<div class="s">' + esc(c.text) + '</div></div>' +
+        '<div class="ops">' +
+        '<button class="btn ghost" data-act="edit" data-i="' + i + '">编辑</button>' +
+        '<button class="btn ghost" data-act="up" data-i="' + i + '">上移</button>' +
+        '<button class="btn ghost" data-act="down" data-i="' + i + '">下移</button>' +
+        '<button class="btn danger" data-act="del" data-i="' + i + '">删除</button>' +
+        '</div></div>';
+    });
+    $("ctList").innerHTML = html;
+    $("ctList").querySelectorAll("button[data-act]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var act = b.getAttribute("data-act");
+        var item = S.data.contacts.slice().sort(bySort)[parseInt(b.getAttribute("data-i"), 10)];
+        if (!item) return;
+        if (act === "edit"){
+          var label = prompt("名称", item.label);
+          if (label === null) return;
+          var text = prompt("内容", item.text);
+          if (text === null) return;
+          item.label = label.trim() || item.type;
+          item.text = text.trim();
+          withOp(function(){ return saveData("编辑联系方式").then(function(){ renderContacts(); toast("已保存"); }); });
+        } else if (act === "up" || act === "down"){
+          moveItem(S.data.contacts, parseInt(b.getAttribute("data-i"), 10), act === "up" ? -1 : 1);
+          withOp(function(){ return saveData("调整联系方式顺序").then(function(){ renderContacts(); toast("已保存"); }); });
+        } else if (act === "del"){
+          if (!confirm("确定删除这条联系方式？")) return;
+          S.data.contacts = S.data.contacts.filter(function(x){ return x.id !== item.id; });
+          withOp(function(){ return saveData("删除联系方式").then(function(){ renderContacts(); toast("已删除"); }); });
+        }
+      });
+    });
+  }
+
+  /* ============ 数据维护 ============ */
+  $("exportBtn").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify(S.data, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "data-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  });
+
+  $("importFile").addEventListener("change", function(){
+    var f = this.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try{
+        var d = JSON.parse(rd.result);
+        if (!d.site || !Array.isArray(d.banners) || !Array.isArray(d.categories) || !Array.isArray(d.images) || !Array.isArray(d.contacts)){
+          throw new Error("文件结构不正确");
+        }
+        if (!confirm("导入后将覆盖当前全部数据，确定继续？")) return;
+        withOp(function(){
+          S.data = d;
+          return saveData("导入数据备份").then(function(){
+            $("importFile").value = "";
+            renderSiteForm(); renderBanners(); renderCatSelects(); renderCats(); renderImages(); renderContacts();
+            toast("导入成功");
+          });
+        });
+      }catch(e){
+        toast("导入失败：" + e.message);
+      }
+    };
+    rd.readAsText(f);
+  });
+
+  $("reloadBtn").addEventListener("click", function(){
+    withOp(function(){
+      return fetch("data.json?v=" + Date.now()).then(function(r){
+        if (!r.ok) throw new Error("读取失败");
+        return r.json();
+      }).then(function(d){
+        S.data = d;
+        renderSiteForm(); renderBanners(); renderCatSelects(); renderCats(); renderImages(); renderContacts();
+        toast("已重新加载");
+      });
+    });
+  });
+
+  $("changePw").addEventListener("click", function(){
+    var np = $("newPw").value;
+    if (np.length < 6){ toast("密码至少 6 位"); return; }
+    withOp(function(){
+      return sha256(np).then(function(h){
+        S.data.admin = S.data.admin || {};
+        S.data.admin.passwordHash = h;
+        return saveData("修改管理密码").then(function(){
+          $("newPw").value = "";
+          toast("密码已修改");
+        });
+      });
+    });
+  });
+
+})();
+</script>
+</body>
+</html>

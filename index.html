@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="keywords" content="">
+<meta name="description" content="">
+<title>品牌展示</title>
+<style>
+  :root{
+    --bg:#F7F4EF;
+    --card:#FFFFFF;
+    --ink:#2E2A26;
+    --sub:#8A7F73;
+    --line:#E8E2D8;
+    --accent:#B08D4F;
+    --accent-soft:rgba(176,141,79,.14);
+    --green:#5F6F52;
+    --serif:Georgia,"Songti SC","SimSun",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    --radius:16px;
+    --tabbar-h:60px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+  img{display:block;max-width:100%;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ===== 顶栏 ===== */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(247,244,239,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;
+  }
+  .brand{
+    font-family:var(--serif);
+    font-size:19px;font-weight:700;letter-spacing:.5px;
+    color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .brand small{display:block;font-size:10px;color:var(--sub);font-family:var(--sans);font-weight:400;letter-spacing:2px;}
+  .topnav{display:none;gap:6px;}
+  .topnav button{
+    border:0;background:none;font-family:var(--sans);font-size:14px;color:var(--sub);
+    padding:8px 14px;border-radius:999px;cursor:pointer;
+  }
+  .topnav button.active{color:#fff;background:var(--ink);}
+
+  /* ===== 主容器 ===== */
+  main{max-width:1024px;margin:0 auto;padding:0 16px 24px;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ===== 首页 ===== */
+  .hero{margin:16px -16px 0;position:relative;}
+  .slider{position:relative;overflow:hidden;border-radius:0;}
+  .slider-track{display:flex;transition:transform .45s cubic-bezier(.25,.8,.3,1);}
+  .slide{flex:0 0 100%;position:relative;aspect-ratio:23/10;}
+  .slide img{width:100%;height:100%;object-fit:cover;}
+  .slide-caption{
+    position:absolute;left:18px;bottom:16px;
+    font-family:var(--serif);font-size:24px;font-weight:700;color:#fff;
+    text-shadow:0 2px 14px rgba(0,0,0,.45);letter-spacing:1px;
+    max-width:70%;
+  }
+  .slide-caption small{display:block;font-family:var(--sans);font-size:11px;font-weight:400;letter-spacing:3px;opacity:.85;}
+  .slider-dots{
+    position:absolute;left:0;right:0;bottom:8px;
+    display:flex;justify-content:center;gap:6px;
+  }
+  .slider-dots i{
+    width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.55);transition:all .3s;
+  }
+  .slider-dots i.on{width:18px;background:#fff;}
+
+  .section-title{
+    display:flex;align-items:baseline;gap:10px;
+    margin:24px 0 12px;
+  }
+  .section-title h2{font-size:17px;font-weight:700;}
+  .section-title span{font-size:12px;color:var(--sub);}
+  .section-title::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  .cat-scroll{
+    display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;
+    scrollbar-width:none;
+  }
+  .cat-scroll::-webkit-scrollbar{display:none;}
+  .cat-pill{
+    flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:7px;
+    width:76px;cursor:pointer;
+  }
+  .cat-pill .thumb{
+    width:76px;height:76px;border-radius:50%;overflow:hidden;border:2px solid #fff;
+    box-shadow:0 2px 10px rgba(46,42,38,.12);
+  }
+  .cat-pill .thumb img{width:100%;height:100%;object-fit:cover;}
+  .cat-pill span{font-size:12px;color:var(--ink);white-space:nowrap;}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;
+  }
+  .card{
+    background:var(--card);border-radius:var(--radius);overflow:hidden;
+    cursor:pointer;box-shadow:0 1px 4px rgba(46,42,38,.06);
+    transition:transform .2s, box-shadow .2s;
+  }
+  .card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(46,42,38,.1);}
+  .card .thumb{position:relative;aspect-ratio:4/3;overflow:hidden;background:#EFEAE2;}
+  .card .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
+  .card:hover .thumb img{transform:scale(1.04);}
+  .card .name{
+    position:absolute;left:0;right:0;bottom:0;
+    padding:22px 12px 10px;
+    background:linear-gradient(transparent,rgba(20,16,12,.62));
+    color:#fff;font-size:14px;font-weight:600;
+  }
+  .card .meta{padding:9px 12px;font-size:12px;color:var(--sub);}
+
+  /* ===== 图库 ===== */
+  .crumb{
+    display:flex;align-items:center;gap:8px;
+    margin:14px 0 12px;font-size:14px;
+  }
+  .crumb .back{
+    width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+    background:var(--card);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;flex:0 0 auto;
+  }
+  .crumb .path{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:600;}
+  .crumb .path small{color:var(--sub);font-weight:400;}
+
+  .gal-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;
+  }
+  .gal-card{position:relative;border-radius:14px;overflow:hidden;cursor:pointer;background:#EFEAE2;aspect-ratio:4/3;}
+  .gal-card img{width:100%;height:100%;object-fit:cover;transition:transform .35s;}
+  .gal-card:active img{transform:scale(1.05);}
+  .gal-card .tag{
+    position:absolute;left:0;right:0;bottom:0;padding:20px 10px 8px;
+    background:linear-gradient(transparent,rgba(20,16,12,.55));
+    color:#fff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    opacity:0;transition:opacity .25s;
+  }
+  .gal-card:hover .tag{opacity:1;}
+
+  .empty{
+    margin:40px 0;text-align:center;color:var(--sub);font-size:14px;
+    padding:36px 16px;border:1px dashed var(--line);border-radius:var(--radius);
+  }
+
+  /* ===== 联系 ===== */
+  .contact-list{margin-top:8px;background:var(--card);border-radius:var(--radius);overflow:hidden;}
+  .contact-row{
+    display:flex;align-items:center;gap:14px;padding:15px 16px;
+    border-bottom:1px solid var(--line);cursor:pointer;
+  }
+  .contact-row:last-child{border-bottom:0;}
+  .contact-row .ico{
+    width:40px;height:40px;border-radius:12px;background:var(--accent-soft);
+    display:flex;align-items:center;justify-content:center;color:var(--accent);flex:0 0 auto;
+  }
+  .contact-row .label{font-size:13px;color:var(--sub);}
+  .contact-row .text{font-size:15px;font-weight:600;word-break:break-all;}
+  .contact-row .go{margin-left:auto;color:var(--sub);}
+
+  /* ===== 底部导航 ===== */
+  .tabbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    background:rgba(255,255,255,.96);backdrop-filter:blur(10px);
+    border-top:1px solid var(--line);
+    display:flex;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .tabbar button{
+    flex:1;border:0;background:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:9px 0 7px;color:var(--sub);font-family:var(--sans);font-size:11px;
+  }
+  .tabbar button.active{color:var(--accent);}
+  .tabbar button svg{width:22px;height:22px;}
+
+  /* ===== 灯箱 ===== */
+  .lightbox{
+    position:fixed;inset:0;z-index:50;background:rgba(15,13,11,.94);
+    display:none;flex-direction:column;
+  }
+  .lightbox.open{display:flex;}
+  .lb-top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;color:#fff;font-size:14px;
+  }
+  .lb-top .count{color:rgba(255,255,255,.7);font-size:13px;}
+  .lb-close{width:38px;height:38px;border:0;background:rgba(255,255,255,.12);border-radius:50%;color:#fff;font-size:18px;cursor:pointer;}
+  .lb-stage{flex:1;position:relative;overflow:hidden;}
+  .lb-track{display:flex;height:100%;transition:transform .35s cubic-bezier(.25,.8,.3,1);}
+  .lb-slide{flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center;padding:0 8px;}
+  .lb-slide img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;}
+  .lb-caption{padding:12px 16px calc(14px + env(safe-area-inset-bottom));color:#fff;text-align:center;font-size:14px;}
+  .lb-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:42px;height:42px;border-radius:50%;border:0;
+    background:rgba(255,255,255,.14);color:#fff;font-size:16px;cursor:pointer;
+    display:none;
+  }
+  .lb-nav.prev{left:12px;}
+  .lb-nav.next{right:12px;}
+  .lightbox.open .lb-nav{display:flex;align-items:center;justify-content:center;}
+
+  /* ===== 提示 ===== */
+  .toast{
+    position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(10px);
+    background:rgba(30,26,22,.9);color:#fff;font-size:13px;
+    padding:9px 18px;border-radius:999px;z-index:60;opacity:0;transition:all .3s;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ===== 桌面端 ===== */
+  @media (min-width:900px){
+    body{padding-bottom:0;}
+    .topnav{display:flex;}
+    .hero{margin:20px 0 0;border-radius:20px;overflow:hidden;}
+    .slider{border-radius:20px;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+    .gal-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+    .cat-pill{width:96px;}
+    .cat-pill .thumb{width:96px;height:96px;}
+    .slide-caption{font-size:34px;left:32px;bottom:24px;}
+    .tabbar{display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .slider-track,.lb-track,.card .thumb img{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand" id="brandTitle"><small>BRAND GALLERY</small></div>
+    <nav class="topnav" id="topNav"></nav>
+  </header>
+
+  <main>
+
+    <!-- ===== 视图：首页 ===== -->
+    <section class="view active" id="view-home">
+      <div class="hero" id="heroBox" hidden>
+        <div class="slider">
+          <div class="slider-track" id="sliderTrack"></div>
+          <div class="slider-dots" id="sliderDots"></div>
+        </div>
+      </div>
+
+      <div id="homeCats"></div>
+      <div id="homeHot"></div>
+    </section>
+
+    <!-- ===== 视图：图库 ===== -->
+    <section class="view" id="view-gallery">
+      <div class="crumb">
+        <button class="back" id="galleryBack" title="返回"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="path" id="galleryPath">全部</div>
+      </div>
+      <div id="galleryBody"></div>
+    </section>
+
+    <!-- ===== 视图：联系 ===== -->
+    <section class="view" id="view-contact">
+      <div class="section-title"><h2>联系我们</h2></div>
+      <div class="contact-list" id="contactList"></div>
+    </section>
+
+  </main>
+
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="home" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></svg>
+      <span>首页</span>
+    </button>
+    <button data-tab="gallery">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-11 11"/></svg>
+      <span>图库</span>
+    </button>
+    <button data-tab="contact">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v4.5l3 2"/></svg>
+      <span>联系</span>
+    </button>
+  </nav>
+
+  <!-- ===== 灯箱 ===== -->
+  <div class="lightbox" id="lightbox">
+    <div class="lb-top">
+      <div class="count" id="lbCount"></div>
+      <button class="lb-close" id="lbClose"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="lb-stage">
+      <div class="lb-track" id="lbTrack"></div>
+      <button class="lb-nav prev" id="lbPrev"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="lb-nav next" id="lbNext"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="lb-caption" id="lbCaption"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ 状态 ============ */
+  var DATA = null;
+  var TAB = "home";            // home | gallery | contact
+  var CAT_STACK = [];          // 图库钻取栈（分类 id）
+  var LB = { list: [], index: 0, startX: 0 };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var el = {
+    brand: $("brandTitle"), hero: $("heroBox"), sliderTrack: $("sliderTrack"),
+    sliderDots: $("sliderDots"), homeCats: $("homeCats"), homeHot: $("homeHot"),
+    galleryBack: $("galleryBack"), galleryPath: $("galleryPath"), galleryBody: $("galleryBody"),
+    contactList: $("contactList"), lb: $("lightbox"), lbTrack: $("lbTrack"),
+    lbCount: $("lbCount"), lbCaption: $("lbCaption"), toast: $("toast")
+  };
+
+  /* ============ 工具 ============ */
+  function bySort(a, b){ return (a.sort||0) - (b.sort||0); }
+  function shown(list){ return list.filter(function(x){ return x.show !== false; }); }
+  function uid(){ return "x" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function catById(id){
+    for (var i = 0; i < DATA.categories.length; i++) if (DATA.categories[i].id === id) return DATA.categories[i];
+    return null;
+  }
+  function childrenOf(id){
+    return shown(DATA.categories).filter(function(c){ return c.pid === id; }).sort(bySort);
+  }
+  // 分类自身 + 所有后代分类 id
+  function catIdsWithChildren(id){
+    var out = [id];
+    var queue = childrenOf(id);
+    while (queue.length){
+      var c = queue.shift();
+      out.push(c.id);
+      queue = queue.concat(childrenOf(c.id));
+    }
+    return out;
+  }
+  function imagesOf(catId){
+    var ids = catIdsWithChildren(catId);
+    return shown(DATA.images).filter(function(im){
+      return ids.indexOf(im.categoryId) !== -1;
+    }).sort(bySort);
+  }
+  function lazyImg(src, alt, cls){
+    var img = document.createElement("img");
+    img.alt = alt || "";
+    img.className = cls || "";
+    img.loading = "lazy";
+    img.setAttribute("data-src", src);
+    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    return img;
+  }
+  function observeLazy(root){
+    if (!("IntersectionObserver" in window)) {
+      var imgs = root.querySelectorAll("img[data-src]");
+      for (var i = 0; i < imgs.length; i++) imgs[i].src = imgs[i].getAttribute("data-src");
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){
+          var img = en.target;
+          img.src = img.getAttribute("data-src");
+          img.removeAttribute("data-src");
+          io.unobserve(img);
+        }
+      });
+    }, { rootMargin: "300px" });
+    var imgs = root.querySelectorAll("img[data-src]");
+    for (var j = 0; j < imgs.length; j++) io.observe(imgs[j]);
+  }
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function toast(msg){
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ el.toast.classList.remove("show"); }, 1800);
+  }
+  function switchTab(tab){
+    TAB = tab;
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    $("view-" + tab).classList.add("active");
+    document.querySelectorAll(".tabbar button").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab") === tab);
+    });
+    document.querySelectorAll(".topnav button").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-tab") === tab);
+    });
+    if (tab === "gallery" && CAT_STACK.length === 0) renderGalleryRoot();
+    window.scrollTo(0, 0);
+  }
+
+  /* ============ 数据加载 ============ */
+  function load(){
+    fetch("data.json?v=" + Date.now())
+      .then(function(r){ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function(data){
+        DATA = data;
+        document.title = data.site.title || "品牌展示";
+        var kw = document.querySelector('meta[name="keywords"]');
+        var de = document.querySelector('meta[name="description"]');
+        if (kw && data.site.keywords) kw.setAttribute("content", data.site.keywords);
+        if (de && data.site.description) de.setAttribute("content", data.site.description);
+        renderBrand();
+        renderHome();
+        renderGalleryRoot();
+        renderContact();
+        initSlider();
+        initTabbar();
+        initLightbox();
+      })
+      .catch(function(err){
+        document.getElementById("homeCats").innerHTML =
+          '<div class="empty">数据加载失败：' + esc(err.message) + '<br>请确认 data.json 与页面在同一目录。</div>';
+      });
+  }
+
+  function renderBrand(){
+    var t = DATA.site.title || "";
+    var parts = t.split(/\s+/);
+    var small = "";
+    if (parts.length > 1){
+      small = esc(parts[parts.length - 1]);
+      t = parts.slice(0, parts.length - 1).join(" ");
+    }
+    el.brand.innerHTML = esc(t) + (small ? "<small>" + small + "</small>" : "");
+    var topNav = document.getElementById("topNav");
+    topNav.innerHTML = "";
+    [["home","首页"],["gallery","图库"],["contact","联系"]].forEach(function(p){
+      var b = document.createElement("button");
+      b.setAttribute("data-tab", p[0]);
+      b.textContent = p[1];
+      b.addEventListener("click", function(){ switchTab(p[0]); });
+      topNav.appendChild(b);
+    });
+  }
+
+  /* ============ 首页 ============ */
+  function renderHome(){
+    var cats = childrenOf(0);
+    var hot = cats.filter(function(c){ return c.hot; });
+
+    // 分类导航（横向圆图）
+    var navHtml = "";
+    if (cats.length){
+      navHtml = '<div class="section-title"><h2>分类导航</h2><span>' + cats.length + ' 个分类</span></div>';
+      navHtml += '<div class="cat-scroll">';
+      cats.forEach(function(c){
+        navHtml += '<div class="cat-pill" data-cat="' + esc(c.id) + '">' +
+          '<div class="thumb"><img loading="lazy" src="' + esc(c.image) + '" alt="' + esc(c.name) + '"></div>' +
+          '<span>' + esc(c.name) + '</span></div>';
+      });
+      navHtml += '</div>';
+    }
+    el.homeCats.innerHTML = navHtml;
+    el.homeCats.querySelectorAll(".cat-pill").forEach(function(p){
+      p.addEventListener("click", function(){ openCategory(p.getAttribute("data-cat")); });
+    });
+
+    // 精品推荐
+    var hotHtml = "";
+    if (hot.length){
+      hotHtml = '<div class="section-title"><h2>精品推荐</h2><span>HOT</span></div><div class="grid">';
+      hot.forEach(function(c){
+        hotHtml += '<div class="card" data-cat="' + esc(c.id) + '">' +
+          '<div class="thumb"><img loading="lazy" src="' + esc(c.image) + '" alt="' + esc(c.name) + '">' +
+          '<div class="name">' + esc(c.name) + '</div></div></div>';
+      });
+      hotHtml += '</div>';
+    }
+    el.homeHot.innerHTML = hotHtml;
+    el.homeHot.querySelectorAll(".card").forEach(function(cd){
+      cd.addEventListener("click", function(){ openCategory(cd.getAttribute("data-cat")); });
+    });
+  }
+
+  // 从首页/图库进入某个分类：有子分类则钻取，否则看图片
+  function openCategory(catId){
+    CAT_STACK = [];
+    if (childrenOf(catId).length){
+      CAT_STACK.push(catId);
+      switchTab("gallery");
+      renderGalleryBody();
+    } else {
+      CAT_STACK.push(catId);
+      switchTab("gallery");
+      renderGalleryBody();
+    }
+  }
+
+  /* ============ 图库 ============ */
+  function renderGalleryRoot(){
+    CAT_STACK = [];
+    renderGalleryBody();
+  }
+
+  function renderGalleryBody(){
+    var parentId = CAT_STACK.length ? CAT_STACK[CAT_STACK.length - 1] : 0;
+    var parent = parentId ? catById(parentId) : null;
+
+    // 面包屑
+    var pathHtml = '<small>图库</small>';
+    var names = [];
+    var ids = [];
+    CAT_STACK.forEach(function(id){
+      var c = catById(id);
+      if (c){ names.push(c.name); ids.push(id); }
+    });
+    for (var i = 0; i < names.length; i++){
+      pathHtml += ' <span style="color:#C9BFB0">/</span> <b data-b="' + ids[i] + '">' + esc(names[i]) + '</b>';
+    }
+    el.galleryPath.innerHTML = pathHtml;
+    el.galleryPath.querySelectorAll("b[data-b]").forEach(function(b){
+      b.style.cursor = "pointer";
+      b.addEventListener("click", function(){
+        CAT_STACK = CAT_STACK.slice(0, CAT_STACK.indexOf(b.getAttribute("data-b")) + 1);
+        renderGalleryBody();
+      });
+    });
+
+    var body = "";
+
+    // 子分类
+    var subs = childrenOf(parentId);
+    if (subs.length){
+      body += '<div class="grid">';
+      subs.forEach(function(c){
+        body += '<div class="card" data-cat="' + esc(c.id) + '">' +
+          '<div class="thumb"><img loading="lazy" src="' + esc(c.image) + '" alt="' + esc(c.name) + '">' +
+          '<div class="name">' + esc(c.name) + '</div></div></div>';
+      });
+      body += '</div>';
+    }
+
+    // 当前分类的图片
+    var imgs = parentId ? imagesOf(parentId) : [];
+    if (imgs.length){
+      body += '<div class="gal-grid" id="galGrid">';
+      imgs.forEach(function(im, idx){
+        body += '<div class="gal-card" data-idx="' + idx + '">' +
+          '<img loading="lazy" data-src="' + esc(im.src) + '" alt="' + esc(im.title || "") + '">' +
+          (im.title ? '<div class="tag">' + esc(im.title) + '</div>' : '') +
+          '</div>';
+      });
+      body += '</div>';
+    }
+
+    if (!subs.length && !imgs.length){
+      body = '<div class="empty">这个分类还没有内容，管理员可在后台添加图片。</div>';
+    }
+
+    el.galleryBody.innerHTML = body;
+
+    // 绑定
+    el.galleryBody.querySelectorAll(".card[data-cat]").forEach(function(cd){
+      cd.addEventListener("click", function(){
+        var id = cd.getAttribute("data-cat");
+        CAT_STACK.push(id);
+        renderGalleryBody();
+        window.scrollTo(0, 0);
+      });
+    });
+    var gal = el.galleryBody.querySelector("#galGrid");
+    if (gal){
+      observeLazy(gal);
+      gal.querySelectorAll(".gal-card").forEach(function(g){
+        g.addEventListener("click", function(){
+          openLightbox(imgs, parseInt(g.getAttribute("data-idx"), 10));
+        });
+      });
+    }
+  }
+
+  /* ============ 联系 ============ */
+  function iconFor(type){
+    var p = "fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'";
+    switch (type){
+      case "mob": case "fax": return '<svg viewBox="0 0 24 24" width="19" height="19" ' + p + '><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8 10a16 16 0 0 0 6 6l1.3-1.4a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg>';
+      case "wx": case "qq": case "user": return '<svg viewBox="0 0 24 24" width="19" height="19" ' + p + '><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3 8.6 8.6 0 0 1-3.4-.7L3 20l1-4.2a8.3 8.3 0 0 1-1-4 8.4 8.4 0 0 1 8.5-8.3 8.4 8.4 0 0 1 8.5 8z"/></svg>';
+      case "mail": return '<svg viewBox="0 0 24 24" width="19" height="19" ' + p + '><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
+      case "web": return '<svg viewBox="0 0 24 24" width="19" height="19" ' + p + '><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg>';
+      default: return '<svg viewBox="0 0 24 24" width="19" height="19" ' + p + '><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".6"/></svg>';
+    }
+  }
+  function renderContact(){
+    var list = shown(DATA.contacts).slice().sort(bySort);
+    if (!list.length){
+      el.contactList.innerHTML = '<div class="empty">暂无联系方式，管理员可在后台添加。</div>';
+      return;
+    }
+    var html = "";
+    list.forEach(function(it){
+      html += '<div class="contact-row" data-id="' + esc(it.id) + '">' +
+        '<div class="ico">' + iconFor(it.type) + '</div>' +
+        '<div><div class="label">' + esc(it.label || it.type) + '</div>' +
+        '<div class="text">' + esc(it.text) + '</div></div>' +
+        '<div class="go"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div></div>';
+    });
+    el.contactList.innerHTML = html;
+    el.contactList.querySelectorAll(".contact-row").forEach(function(row){
+      row.addEventListener("click", function(){
+        var it = null;
+        shown(DATA.contacts).forEach(function(c){ if (c.id === row.getAttribute("data-id")) it = c; });
+        if (!it) return;
+        var t = String(it.text || "").trim();
+        if (it.type === "mob" || it.type === "fax"){
+          if (t) location.href = "tel:" + t.replace(/[^\d+]/g, "");
+        } else if (it.type === "wx" || it.type === "qq" || it.type === "user"){
+          if (navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(t).then(function(){ toast("已复制：" + t); }, function(){ toast(t); });
+          } else { toast(t); }
+        } else if (it.type === "mail"){
+          if (t) location.href = "mailto:" + t;
+        } else if (it.type === "web"){
+          if (it.url) window.open(it.url, "_blank");
+        } else {
+          toast(t);
+        }
+      });
+    });
+  }
+
+  /* ============ Banner 轮播 ============ */
+  var slider = { idx: 0, timer: null, touchX: 0 };
+  function initSlider(){
+    var list = shown(DATA.banners).slice().sort(bySort);
+    if (!list.length){ el.hero.hidden = true; return; }
+    el.hero.hidden = false;
+
+    var trackHtml = "";
+    list.forEach(function(b){
+      trackHtml += '<div class="slide"><img loading="lazy" src="' + esc(b.src) + '" alt="' + esc(b.title || "") + '">' +
+        (b.title ? '<div class="slide-caption">' + esc(b.title) + '</div>' : '') + '</div>';
+    });
+    el.sliderTrack.innerHTML = trackHtml;
+    var dotsHtml = "";
+    list.forEach(function(_, i){ dotsHtml += '<i data-i="' + i + '"></i>'; });
+    el.sliderDots.innerHTML = dotsHtml;
+    el.sliderDots.querySelectorAll("i").forEach(function(d){
+      d.addEventListener("click", function(){ go(parseInt(d.getAttribute("data-i"), 10)); });
+    });
+
+    function go(i){
+      slider.idx = (i + list.length) % list.length;
+      el.sliderTrack.style.transform = "translateX(-" + (slider.idx * 100) + "%)";
+      el.sliderDots.querySelectorAll("i").forEach(function(d, k){
+        d.classList.toggle("on", k === slider.idx);
+      });
+    }
+    function auto(){ clearInterval(slider.timer); slider.timer = setInterval(function(){ go(slider.idx + 1); }, 4500); }
+
+    // 触摸滑动
+    var box = el.hero.querySelector(".slider");
+    box.addEventListener("touchstart", function(e){
+      slider.touchX = e.touches[0].clientX;
+      clearInterval(slider.timer);
+    }, { passive: true });
+    box.addEventListener("touchend", function(e){
+      var dx = e.changedTouches[0].clientX - slider.touchX;
+      if (Math.abs(dx) > 40) go(dx < 0 ? slider.idx + 1 : slider.idx - 1);
+      auto();
+    }, { passive: true });
+    box.addEventListener("mouseenter", function(){ clearInterval(slider.timer); });
+    box.addEventListener("mouseleave", auto);
+
+    go(0);
+    auto();
+  }
+
+  /* ============ 灯箱 ============ */
+  function openLightbox(list, index){
+    if (!list || !list.length) return;
+    LB.list = list; LB.index = index;
+    var html = "";
+    list.forEach(function(im){
+      html += '<div class="lb-slide"><img src="' + esc(im.src) + '" alt="' + esc(im.title || "") + '"></div>';
+    });
+    el.lbTrack.innerHTML = html;
+    el.lb.classList.add("open");
+    document.body.style.overflow = "hidden";
+    lbShow();
+  }
+  function closeLightbox(){
+    el.lb.classList.remove("open");
+    document.body.style.overflow = "";
+    el.lbTrack.innerHTML = "";
+  }
+  function lbShow(){
+    el.lbTrack.style.transform = "translateX(-" + (LB.index * 100) + "%)";
+    el.lbCount.textContent = (LB.index + 1) + " / " + LB.list.length;
+    var im = LB.list[LB.index];
+    el.lbCaption.textContent = im.title || "";
+  }
+  function lbStep(d){
+    LB.index = (LB.index + d + LB.list.length) % LB.list.length;
+    lbShow();
+  }
+  function initLightbox(){
+    el.lbClose.addEventListener("click", closeLightbox);
+    $("lbPrev").addEventListener("click", function(){ lbStep(-1); });
+    $("lbNext").addEventListener("click", function(){ lbStep(1); });
+    el.lb.addEventListener("click", function(e){ if (e.target === el.lb) closeLightbox(); });
+    var stage = el.lb.querySelector(".lb-stage");
+    stage.addEventListener("touchstart", function(e){ LB.startX = e.touches[0].clientX; }, { passive: true });
+    stage.addEventListener("touchend", function(e){
+      var dx = e.changedTouches[0].clientX - LB.startX;
+      if (Math.abs(dx) > 40) lbStep(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    document.addEventListener("keydown", function(e){
+      if (!el.lb.classList.contains("open")) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") lbStep(-1);
+      if (e.key === "ArrowRight") lbStep(1);
+    });
+  }
+
+  /* ============ 底部导航 ============ */
+  function initTabbar(){
+    document.querySelectorAll(".tabbar button").forEach(function(b){
+      b.addEventListener("click", function(){ switchTab(b.getAttribute("data-tab")); });
+    });
+    $("galleryBack").addEventListener("click", function(){
+      if (CAT_STACK.length) CAT_STACK.pop();
+      renderGalleryBody();
+      window.scrollTo(0, 0);
+    });
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

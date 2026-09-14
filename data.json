@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "site": {
+    "title": "奈斯·NICE 软体家居",
+    "keywords": "软体家居,家具,全屋定制,轻奢家居",
+    "description": "奈斯·NICE 软体家居展示站",
+    "logo": "",
+    "footer": "奈斯·NICE 软体家居"
+  },
+  "banners": [
+    {
+      "id": "b1",
+      "src": "uploads/banner/banner_1.jpg",
+      "title": "",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "b2",
+      "src": "uploads/banner/banner_2.jpg",
+      "title": "",
+      "sort": 2,
+      "show": true
+    }
+  ],
+  "categories": [
+    {
+      "id": "c1",
+      "pid": 0,
+      "name": "床",
+      "image": "uploads/menu/menu_1.jpg",
+      "sort": 1,
+      "show": true,
+      "hot": true
+    },
+    {
+      "id": "c2",
+      "pid": 0,
+      "name": "沙发",
+      "image": "uploads/menu/menu_2.jpg",
+      "sort": 2,
+      "show": true,
+      "hot": true
+    },
+    {
+      "id": "c3",
+      "pid": 0,
+      "name": "轻奢系列",
+      "image": "uploads/menu/menu_3.jpg",
+      "sort": 3,
+      "show": true,
+      "hot": false
+    },
+    {
+      "id": "c4",
+      "pid": 0,
+      "name": "现代极简",
+      "image": "uploads/menu/menu_4.jpg",
+      "sort": 4,
+      "show": true,
+      "hot": false
+    },
+    {
+      "id": "c5",
+      "pid": 0,
+      "name": "奶油风",
+      "image": "uploads/menu/menu_5.jpg",
+      "sort": 5,
+      "show": true,
+      "hot": true
+    },
+    {
+      "id": "c6",
+      "pid": 0,
+      "name": "网红系列",
+      "image": "uploads/menu/menu_6.jpg",
+      "sort": 6,
+      "show": true,
+      "hot": false
+    },
+    {
+      "id": "c7",
+      "pid": 0,
+      "name": "中古系列",
+      "image": "uploads/menu/menu_7.jpg",
+      "sort": 7,
+      "show": true,
+      "hot": false
+    },
+    {
+      "id": "c8",
+      "pid": 0,
+      "name": "设计师精选",
+      "image": "uploads/menu/menu_8.jpg",
+      "sort": 8,
+      "show": true,
+      "hot": true
+    }
+  ],
+  "images": [
+    {
+      "id": "i01",
+      "categoryId": "c1",
+      "src": "uploads/image/img_01.jpg",
+      "title": "灰色软包主卧",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i02",
+      "categoryId": "c1",
+      "src": "uploads/image/img_02.jpg",
+      "title": "墨绿软包细节",
+      "sort": 2,
+      "show": true
+    },
+    {
+      "id": "i03",
+      "categoryId": "c2",
+      "src": "uploads/image/img_03.jpg",
+      "title": "米白布艺沙发",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i04",
+      "categoryId": "c2",
+      "src": "uploads/image/img_04.jpg",
+      "title": "双人沙发组合",
+      "sort": 2,
+      "show": true
+    },
+    {
+      "id": "i05",
+      "categoryId": "c3",
+      "src": "uploads/image/img_05.jpg",
+      "title": "轻奢客厅全貌",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i06",
+      "categoryId": "c3",
+      "src": "uploads/image/img_06.jpg",
+      "title": "轻奢餐厅",
+      "sort": 2,
+      "show": true
+    },
+    {
+      "id": "i07",
+      "categoryId": "c4",
+      "src": "uploads/image/img_07.jpg",
+      "title": "极简客厅",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i08",
+      "categoryId": "c4",
+      "src": "uploads/image/img_08.jpg",
+      "title": "极简卧室",
+      "sort": 2,
+      "show": true
+    },
+    {
+      "id": "i09",
+      "categoryId": "c5",
+      "src": "uploads/image/img_09.jpg",
+      "title": "奶油风客厅",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i10",
+      "categoryId": "c5",
+      "src": "uploads/image/img_10.jpg",
+      "title": "奶油风餐厅",
+      "sort": 2,
+      "show": true
+    },
+    {
+      "id": "i11",
+      "categoryId": "c6",
+      "src": "uploads/image/img_11.jpg",
+      "title": "网红设计客厅",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i12",
+      "categoryId": "c6",
+      "src": "uploads/image/img_12.jpg",
+      "title": "休闲懒人角",
+      "sort": 2,
+      "show": true
+    },
+    {
+      "id": "i13",
+      "categoryId": "c7",
+      "src": "uploads/image/img_13.jpg",
+      "title": "中古风客厅",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i14",
+      "categoryId": "c7",
+      "src": "uploads/image/img_14.jpg",
+      "title": "中古风餐厅",
+      "sort": 2,
+      "show": true
+    },
+    {
+      "id": "i15",
+      "categoryId": "c8",
+      "src": "uploads/image/img_15.jpg",
+      "title": "样板间客厅",
+      "sort": 1,
+      "show": true
+    },
+    {
+      "id": "i16",
+      "categoryId": "c8",
+      "src": "uploads/image/img_16.jpg",
+      "title": "样板间书房",
+      "sort": 2,
+      "show": true
+    }
+  ],
+  "contacts": [
+    {
+      "id": "k1",
+      "type": "mob",
+      "label": "电话",
+      "text": "400-000-0000",
+      "sort": 1
+    },
+    {
+      "id": "k2",
+      "type": "wx",
+      "label": "微信",
+      "text": "微信号（后台修改）",
+      "sort": 2
+    },
+    {
+      "id": "k3",
+      "type": "adr",
+      "label": "地址",
+      "text": "门店地址（后台修改）",
+      "sort": 3
+    }
+  ],
+  "admin": {
+    "passwordHash": "6fff538644bd207f5d9a9bd53c7d026c3e7516bf3036c6e0ac065c247dd649f2"
+  }
+}
