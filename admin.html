@@ -344,7 +344,7 @@
   }
   function rawFetch(url, method, body){
     var ctrl = new AbortController();
-    var timer = setTimeout(function(){ ctrl.abort(); }, 20000);
+    var timer = setTimeout(function(){ ctrl.abort(); }, 12000);
     return fetch(url, {
       method: method || "GET",
       headers: {
@@ -447,13 +447,13 @@
     });
   }
 
-  // 串行执行写操作，避免并发冲突
+  // 串行执行写操作，避免并发冲突；用微任务包裹，同步异常也不会卡死遮罩
   function withOp(fn){
     if (opLock){ toast("上一个操作还没完成"); return; }
     opLock = true;
     busy();
-    fn().catch(function(e){
-      toast(e.message || "操作失败");
+    Promise.resolve().then(fn).catch(function(e){
+      toast(e && e.message || "操作失败");
     }).finally(function(){
       opLock = false;
       unbusy();
