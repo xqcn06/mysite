@@ -31,7 +31,7 @@
       "image": "uploads/menu/menu_1.jpg",
       "sort": 1,
       "show": true,
-      "hot": true
+      "hot": false
     },
     {
       "id": "c2",
