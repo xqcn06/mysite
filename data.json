@@ -229,13 +229,6 @@
   ],
   "contacts": [
     {
-      "id": "k2",
-      "type": "wx",
-      "label": "微信",
-      "text": "微信号（后台修改）",
-      "sort": 2
-    },
-    {
       "id": "k3",
       "type": "adr",
       "label": "地址",
