@@ -411,7 +411,7 @@
     document.querySelectorAll(".topnav button").forEach(function(b){
       b.classList.toggle("active", b.getAttribute("data-tab") === tab);
     });
-    if (tab === "gallery" && CAT_STACK.length === 0) renderGalleryRoot();
+    if (tab === "gallery") renderGalleryRoot();
     window.scrollTo(0, 0);
   }
 
@@ -501,16 +501,10 @@
 
   // 从首页/图库进入某个分类：有子分类则钻取，否则看图片
   function openCategory(catId){
-    CAT_STACK = [];
-    if (childrenOf(catId).length){
-      CAT_STACK.push(catId);
-      switchTab("gallery");
-      renderGalleryBody();
-    } else {
-      CAT_STACK.push(catId);
-      switchTab("gallery");
-      renderGalleryBody();
-    }
+    CAT_STACK = [catId];
+    switchTab("gallery");   // 切到图库视图（内部会重置为根目录）
+    CAT_STACK = [catId];    // 恢复目标分类栈
+    renderGalleryBody();
   }
 
   /* ============ 图库 ============ */
