@@ -154,11 +154,13 @@
 <div class="login-wrap" id="loginWrap">
   <div class="login-card">
     <h1>后台管理</h1>
-    <div class="tip">密码 + GitHub Token 双重校验</div>
+    <div class="tip">登录只需管理密码；Token 用于保存数据</div>
     <label>管理密码</label>
     <input type="password" id="pw" placeholder="请输入管理密码" autocomplete="current-password">
-    <label>GitHub Token（写仓库用）</label>
-    <input type="password" id="token" placeholder="ghp_ 或 github_pat_ 开头" autocomplete="off">
+    <label>GitHub Token（保存图片/数据时使用）</label>
+    <input type="password" id="token" placeholder="github_pat_ 开头" autocomplete="off">
+    <button class="btn ghost block" id="tokenTestBtn" style="margin-top:10px;">测试 Token 连接</button>
+    <div class="login-err" id="tokenTest"></div>
     <div class="remember"><input type="checkbox" id="remember"><span>仅本次会话记住 Token（关闭页面后失效）</span></div>
     <details class="adv">
       <summary>仓库信息（一般自动识别，无需修改）</summary>
@@ -334,8 +336,14 @@
 
   /* ============ GitHub API ============ */
   function gh(path, method, body){
+    if (!S.token){ throw new Error("请先在登录页填写 GitHub Token"); }
     var url = "https://api.github.com/repos/" + encodeURIComponent(S.owner) + "/" + encodeURIComponent(S.repo) +
               "/contents/" + path + "?ref=" + encodeURIComponent(S.branch);
+    return rawFetch(url, method, body);
+  }
+  function rawFetch(url, method, body){
+    var ctrl = new AbortController();
+    var timer = setTimeout(function(){ ctrl.abort(); }, 20000);
     return fetch(url, {
       method: method || "GET",
       headers: {
@@ -343,9 +351,14 @@
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28"
       },
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
+      signal: ctrl.signal
     }).then(function(r){
+      clearTimeout(timer);
       return r.json().then(function(j){ return { ok: r.ok, status: r.status, json: j }; });
+    }, function(){
+      clearTimeout(timer);
+      throw new Error("无法连接 GitHub API：请检查网络或代理设置");
     });
   }
   function ghErr(res, what){
@@ -468,12 +481,12 @@
   $("loginBtn").addEventListener("click", doLogin);
   $("pw").addEventListener("keydown", function(e){ if (e.key === "Enter") doLogin(); });
   $("token").addEventListener("keydown", function(e){ if (e.key === "Enter") doLogin(); });
+  $("tokenTestBtn").addEventListener("click", testToken);
 
   function doLogin(){
     var pw = $("pw").value;
     var token = $("token").value.trim();
     if (!pw){ $("loginErr").textContent = "请输入管理密码"; return; }
-    if (!token){ $("loginErr").textContent = "请输入 GitHub Token"; return; }
     S.token = token;
     S.owner = $("owner").value.trim();
     S.repo = $("repo").value.trim();
@@ -490,24 +503,45 @@
           if (data.admin && data.admin.passwordHash && h !== data.admin.passwordHash){
             throw new Error("密码错误");
           }
-          // 用 Token 拉取仓库内 data.json，同时校验 Token 有效性与权限
-          return gh("data.json").then(function(r){
-            if (!r.ok) ghErr(r, "Token 验证");
-            S.data = data;
-            S.dataSha = r.json.sha;
-            if ($("remember").checked){
-              try{ sessionStorage.setItem("admin_token", token); }catch(e){}
-            } else {
-              try{ sessionStorage.removeItem("admin_token"); }catch(e){}
-            }
-            enterPanel();
-          });
+          S.data = data;
+          if ($("remember").checked){
+            try{ sessionStorage.setItem("admin_token", token); }catch(e){}
+          } else {
+            try{ sessionStorage.removeItem("admin_token"); }catch(e){}
+          }
+          enterPanel();
         });
       })
       .catch(function(e){
         unbusy();
         $("loginErr").textContent = e.message || "登录失败";
       });
+  }
+
+  function testToken(){
+    var token = $("token").value.trim();
+    var owner = $("owner").value.trim();
+    var repo = $("repo").value.trim();
+    var branch = $("branch").value.trim() || "main";
+    var out = $("tokenTest");
+    if (!token){ out.textContent = "请先粘贴 GitHub Token"; return; }
+    S.token = token; S.owner = owner; S.repo = repo; S.branch = branch;
+    out.textContent = "";
+    busy("测试连接 GitHub…");
+    rawFetch("https://api.github.com/user")
+      .then(function(r){
+        if (!r.ok){ out.textContent = "Token 无效或已过期"; return; }
+        if (!owner || !repo){ out.textContent = "Token 有效，但请先填写仓库 Owner 和仓库名"; return; }
+        return gh("data.json").then(function(r2){
+          if (!r2.ok){
+            out.textContent = "Token 有效，但读取仓库失败：" + (r2.json && r2.json.message ? r2.json.message : ("HTTP " + r2.status));
+            return;
+          }
+          out.textContent = "连接正常：Token 有效，可读写仓库 " + owner + "/" + repo;
+        });
+      })
+      .catch(function(e){ out.textContent = e.message || "测试失败"; })
+      .finally(function(){ unbusy(); });
   }
 
   function enterPanel(){
