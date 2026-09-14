@@ -229,13 +229,6 @@
   ],
   "contacts": [
     {
-      "id": "k1",
-      "type": "mob",
-      "label": "电话",
-      "text": "400-000-0000",
-      "sort": 1
-    },
-    {
       "id": "k2",
       "type": "wx",
       "label": "微信",
